@@ -1,0 +1,126 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { useT, type Lang } from '../../../i18n/ui';
+import { loc, md, formatDate, PLACEHOLDER } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const dogs = await getCollection('dogs');
+  return ['ro', 'en'].flatMap((lang) => dogs.map((dog) => ({ params: { lang, slug: dog.id }, props: { dog } })));
+}
+
+const lang = Astro.params.lang as Lang;
+const { dog } = Astro.props;
+const t = useT(lang);
+const d = dog.data;
+const p = d.pedigree;
+const pedigreeRows = [
+  ['sire', p.sire],
+  ['dam', p.dam],
+  ['sire_sire', p.sire_sire],
+  ['sire_dam', p.sire_dam],
+  ['dam_sire', p.dam_sire],
+  ['dam_dam', p.dam_dam],
+].filter(([, v]) => v) as [Parameters<typeof t>[0], string][];
+const gallery = [d.photo, ...d.gallery].filter(Boolean) as string[];
+---
+
+<BaseLayout lang={lang} title={d.name} description={loc(d, 'description', lang).slice(0, 160)} image={d.photo}>
+  <section class="container-x py-12">
+    <a href={`/${lang}/dogs/`} class="text-sm text-bone/60 hover:text-blood">← {t('back')}</a>
+
+    <div class="mt-6 grid gap-10 lg:grid-cols-2">
+      <div class="space-y-3">
+        <img src={gallery[0] || PLACEHOLDER} alt={d.name} class="aspect-[4/5] w-full object-cover" />
+        {
+          gallery.length > 1 && (
+            <div class="grid grid-cols-4 gap-3">
+              {gallery.slice(1).map((g) => (
+                <img src={g} alt="" loading="lazy" class="aspect-square w-full object-cover" />
+              ))}
+            </div>
+          )
+        }
+      </div>
+
+      <div>
+        <p class="font-display text-sm uppercase tracking-[0.3em] text-blood">
+          {d.sex === 'male' ? t('sex_male') : t('sex_female')}
+          {d.status !== 'active' && ` · ${t(`status_${d.status}` as 'status_active')}`}
+        </p>
+        <h1 class="mt-2 text-5xl">{d.name}</h1>
+
+        <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
+          {d.birth_date && (
+            <div><dt class="text-ash">{t('born')}</dt><dd>{formatDate(d.birth_date, lang)}</dd></div>
+          )}
+          {d.color && <div><dt class="text-ash">{t('color')}</dt><dd>{d.color}</dd></div>}
+        </dl>
+
+        {
+          d.titles.length > 0 && (
+            <div class="mt-6">
+              <h2 class="mb-2 text-xl">{t('titles')}</h2>
+              <ul class="flex flex-wrap gap-2">
+                {d.titles.map((title) => (
+                  <li class="border border-gold/40 px-3 py-1 text-sm text-gold">{title}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <div class="prose-kennel mt-6" set:html={md(loc(d, 'description', lang))} />
+      </div>
+    </div>
+
+    <div class="mt-14 grid gap-10 lg:grid-cols-2">
+      {
+        pedigreeRows.length > 0 && (
+          <div>
+            <h2 class="section-title">{t('pedigree')}</h2>
+            <dl class="card mt-6 divide-y divide-white/10">
+              {pedigreeRows.map(([key, value]) => (
+                <div class="flex justify-between gap-4 px-5 py-3 text-sm">
+                  <dt class="text-ash">{t(key)}</dt>
+                  <dd class="text-right">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {d.pedigree_url && (
+              <a href={d.pedigree_url} target="_blank" rel="noopener noreferrer" class="mt-4 inline-block text-sm text-blood underline">
+                {t('pedigree_link')}
+              </a>
+            )}
+          </div>
+        )
+      }
+
+      {
+        d.health.length > 0 && (
+          <div>
+            <h2 class="section-title">{t('health')}</h2>
+            <table class="card mt-6 w-full text-left text-sm">
+              <thead class="border-b border-white/10 text-ash">
+                <tr>
+                  <th class="px-5 py-3 font-normal">{t('test')}</th>
+                  <th class="px-5 py-3 font-normal">{t('result')}</th>
+                  <th class="px-5 py-3 font-normal">{t('date')}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                {d.health.map((h) => (
+                  <tr>
+                    <td class="px-5 py-3">{h.test}</td>
+                    <td class="px-5 py-3 font-semibold text-gold">{h.result}</td>
+                    <td class="px-5 py-3 text-bone/70">{formatDate(h.date, lang)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>

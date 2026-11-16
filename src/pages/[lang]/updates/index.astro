@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import { getLangPaths, useT, type Lang } from '../../../i18n/ui';
+import { loc, formatDate, PLACEHOLDER } from '../../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const updates = (await getCollection('updates')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout lang={lang} title={t('updates_title')} description={t('updates_intro')}>
+  <PageHero eyebrow="HöllenEngel" title={t('updates_title')} text={t('updates_intro')} />
+  <section class="container-x py-14">
+    {updates.length === 0 && <p class="text-bone/70">{t('empty')}</p>}
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        updates.map((u) => (
+          <a href={`/${lang}/updates/${u.id}/`} class="card group block overflow-hidden transition hover:border-blood">
+            <img src={u.data.image || PLACEHOLDER} alt="" loading="lazy" class="aspect-video w-full object-cover" />
+            <div class="p-5">
+              <p class="text-xs uppercase tracking-widest text-ash">
+                {t(`cat_${u.data.category}` as 'cat_other')} · {formatDate(u.data.date, lang)}
+              </p>
+              <h2 class="mt-2 text-xl group-hover:text-blood">{loc(u.data, 'title', lang)}</h2>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

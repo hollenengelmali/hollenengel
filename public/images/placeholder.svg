@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Placeholder">
+  <rect width="800" height="600" fill="#141416"/>
+  <path d="M0 600 L300 220 L430 380 L520 280 L800 600 Z" fill="#232327"/>
+  <path d="M400 150 L470 235 L400 215 L330 235 Z" fill="#d3202f"/>
+  <text x="400" y="540" fill="#9a9aa2" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" letter-spacing="6">HOLLENENGEL</text>
+</svg>

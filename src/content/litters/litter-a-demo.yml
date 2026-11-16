@@ -1,0 +1,20 @@
+title: Litter A (demo)
+status: born
+sire: demo-male
+dam: demo-female
+birth_date: 2026-10-20
+description_ro: |
+  Lot demonstrativ. Șterge-l sau editează-l din panoul de administrare.
+description_en: |
+  Demo litter. Delete or edit it from the admin panel.
+puppies:
+  - name: Puppy 1
+    sex: male
+    color: Fawn
+    status: available
+    photo: /images/placeholder.svg
+  - name: Puppy 2
+    sex: female
+    color: Fawn
+    status: reserved
+    photo: /images/placeholder.svg

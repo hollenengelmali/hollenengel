@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import DogCard from '../../../components/DogCard.astro';
+import { getLangPaths, useT, type Lang } from '../../../i18n/ui';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const dogs = (await getCollection('dogs')).sort((a, b) => a.data.name.localeCompare(b.data.name));
+const filters = [
+  { key: 'all', label: t('all') },
+  { key: 'male', label: t('males') },
+  { key: 'female', label: t('females') },
+  { key: 'retired', label: t('retired') },
+];
+---
+
+<BaseLayout lang={lang} title={t('dogs_title')} description={t('dogs_intro')}>
+  <PageHero eyebrow="HöllenEngel" title={t('dogs_title')} text={t('dogs_intro')} />
+  <section class="container-x py-14">
+    <div class="mb-8 flex flex-wrap gap-2" role="group" aria-label="Filter">
+      {
+        filters.map((f, i) => (
+          <button
+            data-filter={f.key}
+            class:list={[
+              'filter-btn border px-4 py-2 font-display text-xs uppercase tracking-widest transition',
+              i === 0 ? 'border-blood bg-blood text-white' : 'border-white/20 hover:border-blood',
+            ]}
+          >
+            {f.label}
+          </button>
+        ))
+      }
+    </div>
+    {
+      dogs.length === 0 ? (
+        <p class="text-bone/70">{t('empty')}</p>
+      ) : (
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" id="dog-grid">
+          {dogs.map((dog) => (
+            <DogCard dog={dog} lang={lang} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const cards = document.querySelectorAll<HTMLElement>('#dog-grid > a');
+  buttons.forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.filter;
+      buttons.forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle('bg-blood', on);
+        b.classList.toggle('border-blood', on);
+        b.classList.toggle('text-white', on);
+      });
+      cards.forEach((c) => {
+        const show =
+          f === 'all' ||
+          c.dataset.sex === f ||
+          (f === 'retired' && (c.dataset.status === 'retired' || c.dataset.status === 'memorial'));
+        c.classList.toggle('hidden', !show);
+      });
+    }),
+  );
+</script>

@@ -1,0 +1,60 @@
+---
+import Logo from './Logo.astro';
+import { useT, type Lang } from '../i18n/ui';
+import { site, loc } from '../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const year = new Date().getFullYear();
+const socials = [
+  { name: 'Facebook', href: site.facebook },
+  { name: 'Instagram', href: site.instagram },
+  { name: 'YouTube', href: site.youtube },
+].filter((s) => s.href);
+---
+
+<footer class="mt-24 border-t border-white/10 bg-coal">
+  <div class="container-x grid gap-10 py-14 md:grid-cols-3">
+    <div class="space-y-4">
+      <Logo class="h-16 w-auto" />
+      <p class="text-sm text-bone/70">{loc(site, 'tagline', lang)}</p>
+      <p class="text-xs text-ash">{loc(site, 'registration', lang)}</p>
+    </div>
+
+    <div>
+      <h3 class="mb-4 text-lg text-bone">{t('quick_links')}</h3>
+      <ul class="space-y-2 text-sm text-bone/70">
+        <li><a class="hover:text-blood" href={`/${lang}/dogs/`}>{t('nav_dogs')}</a></li>
+        <li><a class="hover:text-blood" href={`/${lang}/litters/`}>{t('nav_litters')}</a></li>
+        <li><a class="hover:text-blood" href={`/${lang}/breed/`}>{t('nav_breed')}</a></li>
+        <li><a class="hover:text-blood" href={`/${lang}/contact/`}>{t('nav_contact')}</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="mb-4 text-lg text-bone">{t('contact_title')}</h3>
+      <ul class="space-y-2 text-sm text-bone/70">
+        {site.email && <li><a class="hover:text-blood" href={`mailto:${site.email}`}>{site.email}</a></li>}
+        {site.phone && <li><a class="hover:text-blood" href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a></li>}
+        {site.address && <li>{site.address}</li>}
+      </ul>
+      {
+        socials.length > 0 && (
+          <div class="mt-5 flex gap-4 text-sm">
+            {socials.map((s) => (
+              <a class="text-bone/70 hover:text-blood" href={s.href} target="_blank" rel="noopener noreferrer">
+                {s.name}
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-5 text-center text-xs text-ash">
+    © {year} {site.kennel_name}. {t('rights')}
+  </div>
+</footer>

@@ -1,0 +1,131 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../lib/content';
+
+interface Props {
+  lang: Lang;
+  mode?: 'contact' | 'reserve';
+  options?: string[];
+}
+const { lang, mode = 'contact', options = [] } = Astro.props;
+const t = useT(lang);
+const formId = `form-${mode}`;
+---
+
+<form
+  id={formId}
+  class="space-y-5"
+  data-key={site.form_access_key}
+  data-email={site.email}
+  data-mode={mode}
+  data-ok={t('form_sent')}
+  data-err={t('form_error')}
+>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <label class="block space-y-2">
+      <span class="text-sm text-bone/80">{t('form_name')} *</span>
+      <input class="field" name="name" required autocomplete="name" />
+    </label>
+    <label class="block space-y-2">
+      <span class="text-sm text-bone/80">{t('form_email')} *</span>
+      <input class="field" type="email" name="email" required autocomplete="email" />
+    </label>
+    <label class="block space-y-2">
+      <span class="text-sm text-bone/80">{t('form_phone')}</span>
+      <input class="field" type="tel" name="phone" autocomplete="tel" />
+    </label>
+    <label class="block space-y-2">
+      <span class="text-sm text-bone/80">{t('form_city')}</span>
+      <input class="field" name="location" />
+    </label>
+  </div>
+
+  {
+    mode === 'reserve' && (
+      <div class="grid gap-5 sm:grid-cols-2">
+        <label class="block space-y-2">
+          <span class="text-sm text-bone/80">{t('form_litter')}</span>
+          <select class="field" name="litter">
+            <option value="">{t('form_general')}</option>
+            {options.map((o) => (
+              <option value={o}>{o}</option>
+            ))}
+          </select>
+        </label>
+        <label class="block space-y-2">
+          <span class="text-sm text-bone/80">{t('form_pref')}</span>
+          <select class="field" name="preference">
+            <option value={t('form_pref_any')}>{t('form_pref_any')}</option>
+            <option value={t('sex_male')}>{t('sex_male')}</option>
+            <option value={t('sex_female')}>{t('sex_female')}</option>
+          </select>
+        </label>
+      </div>
+      <label class="block space-y-2">
+        <span class="text-sm text-bone/80">{t('form_experience')}</span>
+        <textarea class="field" name="experience" rows="3"></textarea>
+      </label>
+    )
+  }
+
+  <label class="block space-y-2">
+    <span class="text-sm text-bone/80">{t('form_message')} *</span>
+    <textarea class="field" name="message" rows="5" required></textarea>
+  </label>
+
+  <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" />
+
+  <label class="flex items-start gap-3 text-sm text-bone/70">
+    <input type="checkbox" name="consent" required class="mt-1 accent-[#d3202f]" />
+    <span>{t('form_consent')}</span>
+  </label>
+
+  <div class="flex items-center gap-4">
+    <button type="submit" class="btn btn-primary">{t('form_send')}</button>
+    <p class="status text-sm" role="status" aria-live="polite"></p>
+  </div>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('form[data-key]').forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = form.querySelector<HTMLElement>('.status')!;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const { key, email, mode, ok, err } = form.dataset;
+      status.textContent = '';
+
+      if (!key) {
+        const body = Object.entries(data)
+          .filter(([k]) => k !== 'botcheck' && k !== 'consent')
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('\n');
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(
+          `HöllenEngel - ${mode}`,
+        )}&body=${encodeURIComponent(body)}`;
+        return;
+      }
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            ...data,
+            access_key: key,
+            subject: `HöllenEngel - ${mode}`,
+            from_name: 'HöllenEngel website',
+          }),
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error('failed');
+        form.reset();
+        status.className = 'status text-sm text-gold';
+        status.textContent = ok ?? '';
+      } catch {
+        status.className = 'status text-sm text-blood';
+        status.textContent = err ?? '';
+      }
+    });
+  });
+</script>

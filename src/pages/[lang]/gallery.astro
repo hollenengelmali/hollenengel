@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import gallery from '../../content/settings/gallery.json';
+import { getLangPaths, useT, type Lang } from '../../i18n/ui';
+import { loc, PLACEHOLDER } from '../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const images = gallery.images as { image: string; caption_ro?: string; caption_en?: string }[];
+---
+
+<BaseLayout lang={lang} title={t('gallery_title')}>
+  <PageHero eyebrow="HöllenEngel" title={t('gallery_title')} />
+  <section class="container-x py-14">
+    {images.length === 0 && <p class="text-bone/70">{t('empty')}</p>}
+    <div class="columns-2 gap-4 md:columns-3">
+      {
+        images.map((item) => (
+          <figure class="mb-4 break-inside-avoid">
+            <img src={item.image || PLACEHOLDER} alt={loc(item, 'caption', lang)} loading="lazy" class="w-full" />
+            {loc(item, 'caption', lang) && (
+              <figcaption class="mt-1 text-xs text-ash">{loc(item, 'caption', lang)}</figcaption>
+            )}
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

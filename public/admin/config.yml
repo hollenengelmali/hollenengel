@@ -1,0 +1,199 @@
+backend:
+  name: github
+  repo: YOUR_GITHUB_USER/hollenengel # replace after creating the GitHub repository
+  branch: main
+
+local_backend: true # used only with `npm run cms` on localhost
+
+media_folder: public/uploads
+public_folder: /uploads
+
+site_url: https://hollenengel.ro
+display_url: https://hollenengel.ro
+
+collections:
+  - name: dogs
+    label: Dogs / Câini
+    label_singular: Dog
+    folder: src/content/dogs
+    extension: yml
+    format: yml
+    create: true
+    identifier_field: name
+    slug: '{{slug}}'
+    summary: '{{name}} ({{sex}})'
+    fields:
+      - { label: Name, name: name, widget: string }
+      - label: Sex
+        name: sex
+        widget: select
+        options:
+          - { label: Male, value: male }
+          - { label: Female, value: female }
+      - label: Status
+        name: status
+        widget: select
+        default: active
+        options:
+          - { label: Active, value: active }
+          - { label: Retired, value: retired }
+          - { label: In memoriam, value: memorial }
+      - { label: Birth date, name: birth_date, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD, required: false }
+      - { label: Colour, name: color, widget: string, required: false }
+      - { label: Main photo, name: photo, widget: image, required: false }
+      - { label: More photos, name: gallery, widget: list, field: { label: Photo, name: photo, widget: image }, required: false }
+      - { label: Titles, name: titles, widget: list, field: { label: Title, name: title, widget: string }, required: false }
+      - label: Pedigree
+        name: pedigree
+        widget: object
+        required: false
+        fields:
+          - { label: Sire, name: sire, widget: string, required: false }
+          - { label: Dam, name: dam, widget: string, required: false }
+          - { label: Paternal grandsire, name: sire_sire, widget: string, required: false }
+          - { label: Paternal granddam, name: sire_dam, widget: string, required: false }
+          - { label: Maternal grandsire, name: dam_sire, widget: string, required: false }
+          - { label: Maternal granddam, name: dam_dam, widget: string, required: false }
+      - { label: Full pedigree link (optional), name: pedigree_url, widget: string, required: false }
+      - label: Health results
+        name: health
+        widget: list
+        required: false
+        summary: '{{fields.test}}: {{fields.result}}'
+        fields:
+          - { label: Test (HD, ED, eyes, DM...), name: test, widget: string }
+          - { label: Result, name: result, widget: string }
+          - { label: Date, name: date, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD, required: false }
+      - { label: Description (RO), name: description_ro, widget: markdown, required: false }
+      - { label: Description (EN), name: description_en, widget: markdown, required: false }
+
+  - name: litters
+    label: Litters / Loturi
+    label_singular: Litter
+    folder: src/content/litters
+    extension: yml
+    format: yml
+    create: true
+    identifier_field: title
+    slug: '{{slug}}'
+    summary: '{{title}} - {{status}}'
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Status
+        name: status
+        widget: select
+        options:
+          - { label: Planned, value: planned }
+          - { label: Expected (pregnant), value: expected }
+          - { label: Born (puppies available), value: born }
+          - { label: Past (archive), value: past }
+      - { label: Sire (father), name: sire, widget: relation, collection: dogs, search_fields: [name], value_field: '{{slug}}', display_fields: [name], required: false }
+      - { label: Dam (mother), name: dam, widget: relation, collection: dogs, search_fields: [name], value_field: '{{slug}}', display_fields: [name], required: false }
+      - { label: Expected date, name: expected_date, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD, required: false }
+      - { label: Birth date, name: birth_date, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD, required: false }
+      - { label: Description (RO), name: description_ro, widget: markdown, required: false }
+      - { label: Description (EN), name: description_en, widget: markdown, required: false }
+      - label: Puppies
+        name: puppies
+        widget: list
+        required: false
+        summary: '{{fields.name}} - {{fields.status}}'
+        fields:
+          - { label: Name, name: name, widget: string }
+          - label: Sex
+            name: sex
+            widget: select
+            options:
+              - { label: Male, value: male }
+              - { label: Female, value: female }
+          - { label: Colour, name: color, widget: string, required: false }
+          - label: Status
+            name: status
+            widget: select
+            default: available
+            options:
+              - { label: Available, value: available }
+              - { label: Reserved, value: reserved }
+              - { label: Sold / gone home, value: sold }
+          - { label: Photo, name: photo, widget: image, required: false }
+
+  - name: updates
+    label: Updates / Noutăți
+    label_singular: Update
+    folder: src/content/updates
+    extension: yml
+    format: yml
+    create: true
+    identifier_field: title_en
+    slug: '{{year}}-{{month}}-{{slug}}'
+    summary: '{{title_en}}'
+    fields:
+      - { label: Title (RO), name: title_ro, widget: string }
+      - { label: Title (EN), name: title_en, widget: string }
+      - { label: Date, name: date, widget: datetime, time_format: false, date_format: YYYY-MM-DD, format: YYYY-MM-DD }
+      - label: Category
+        name: category
+        widget: select
+        default: other
+        options:
+          - { label: Competition, value: competition }
+          - { label: Training, value: training }
+          - { label: Other, value: other }
+      - { label: Image, name: image, widget: image, required: false }
+      - { label: Text (RO), name: body_ro, widget: markdown, required: false }
+      - { label: Text (EN), name: body_en, widget: markdown, required: false }
+
+  - name: pages
+    label: Pages & Settings
+    files:
+      - name: site
+        label: Site settings (contact, home page)
+        file: src/content/settings/site.json
+        fields:
+          - { label: Kennel name, name: kennel_name, widget: string }
+          - { label: Tagline (RO), name: tagline_ro, widget: string }
+          - { label: Tagline (EN), name: tagline_en, widget: string }
+          - { label: Home title (RO), name: hero_title_ro, widget: string }
+          - { label: Home title (EN), name: hero_title_en, widget: string }
+          - { label: Home text (RO), name: hero_text_ro, widget: text }
+          - { label: Home text (EN), name: hero_text_en, widget: text }
+          - { label: Home background image, name: hero_image, widget: image, required: false }
+          - { label: Home background video (mp4 path or link), name: hero_video, widget: string, required: false }
+          - { label: Email, name: email, widget: string }
+          - { label: Phone, name: phone, widget: string }
+          - { label: Address, name: address, widget: string }
+          - { label: Facebook link, name: facebook, widget: string, required: false }
+          - { label: Instagram link, name: instagram, widget: string, required: false }
+          - { label: YouTube link, name: youtube, widget: string, required: false }
+          - { label: Registration line (RO), name: registration_ro, widget: string, required: false }
+          - { label: Registration line (EN), name: registration_en, widget: string, required: false }
+          - { label: Web3Forms access key (for forms), name: form_access_key, widget: string, required: false }
+      - name: breed
+        label: About the breed
+        file: src/content/settings/breed.json
+        fields:
+          - { label: Title (RO), name: title_ro, widget: string }
+          - { label: Title (EN), name: title_en, widget: string }
+          - { label: Text (RO), name: body_ro, widget: markdown }
+          - { label: Text (EN), name: body_en, widget: markdown }
+          - { label: Image, name: image, widget: image, required: false }
+      - name: kennel
+        label: About the kennel
+        file: src/content/settings/kennel.json
+        fields:
+          - { label: Title (RO), name: title_ro, widget: string }
+          - { label: Title (EN), name: title_en, widget: string }
+          - { label: Text (RO), name: body_ro, widget: markdown }
+          - { label: Text (EN), name: body_en, widget: markdown }
+          - { label: Image, name: image, widget: image, required: false }
+      - name: gallery
+        label: Gallery
+        file: src/content/settings/gallery.json
+        fields:
+          - label: Images
+            name: images
+            widget: list
+            fields:
+              - { label: Image, name: image, widget: image }
+              - { label: Caption (RO), name: caption_ro, widget: string, required: false }
+              - { label: Caption (EN), name: caption_en, widget: string, required: false }

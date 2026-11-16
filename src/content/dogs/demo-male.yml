@@ -1,0 +1,28 @@
+name: Demo Male
+sex: male
+status: active
+birth_date: 2021-03-14
+color: Fawn with black mask
+photo: /images/placeholder.svg
+titles:
+  - Example title 1
+  - Example title 2
+pedigree:
+  sire: Example Sire
+  dam: Example Dam
+  sire_sire: Example Grandsire 1
+  sire_dam: Example Granddam 1
+  dam_sire: Example Grandsire 2
+  dam_dam: Example Granddam 2
+pedigree_url: ''
+health:
+  - test: HD
+    result: A
+    date: 2022-05-10
+  - test: ED
+    result: '0'
+    date: 2022-05-10
+description_ro: |
+  Descriere exemplu. Înlocuiește cu textul real din panoul de administrare.
+description_en: |
+  Sample description. Replace with the real text in the admin panel.

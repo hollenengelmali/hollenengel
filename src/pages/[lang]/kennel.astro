@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import kennel from '../../content/settings/kennel.json';
+import { getLangPaths, useT, type Lang } from '../../i18n/ui';
+import { loc, md } from '../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+const title = loc(kennel, 'title', lang);
+---
+
+<BaseLayout lang={lang} title={title}>
+  <PageHero eyebrow={t('nav_kennel')} title={title} />
+  <section class="container-x py-14">
+    <div class="grid gap-10 lg:grid-cols-3">
+      <div class="prose-kennel lg:col-span-2" set:html={md(loc(kennel, 'body', lang))} />
+      {kennel.image && <img src={kennel.image} alt="" class="w-full object-cover" />}
+    </div>
+  </section>
+</BaseLayout>

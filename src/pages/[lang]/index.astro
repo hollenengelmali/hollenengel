@@ -1,0 +1,122 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DogCard from '../../components/DogCard.astro';
+import { getLangPaths, useT, type Lang } from '../../i18n/ui';
+import { site, loc, formatDate, PLACEHOLDER } from '../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+
+const dogs = (await getCollection('dogs')).filter((d) => d.data.status === 'active').slice(0, 4);
+const litters = (await getCollection('litters')).filter((l) => l.data.status !== 'past');
+const updates = (await getCollection('updates'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const litter = litters[0];
+---
+
+<BaseLayout lang={lang}>
+  <section class="relative isolate overflow-hidden">
+    {
+      site.hero_video ? (
+        <video class="absolute inset-0 -z-20 h-full w-full object-cover" src={site.hero_video} autoplay muted loop playsinline></video>
+      ) : (
+        <img class="absolute inset-0 -z-20 h-full w-full object-cover opacity-40" src={site.hero_image || PLACEHOLDER} alt="" />
+      )
+    }
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/80 to-ink/30"></div>
+    <div
+      class="absolute -right-20 top-0 -z-10 h-full w-1/3 bg-blood/20"
+      style="clip-path: polygon(40% 0, 100% 0, 100% 100%, 0 100%)"
+      aria-hidden="true"
+    >
+    </div>
+    <div class="container-x flex min-h-[78vh] flex-col justify-center py-24">
+      <p class="mb-4 font-display text-sm uppercase tracking-[0.35em] text-blood">{loc(site, 'tagline', lang)}</p>
+      <h1 class="max-w-3xl text-5xl leading-tight sm:text-7xl">{loc(site, 'hero_title', lang)}</h1>
+      <p class="mt-6 max-w-xl text-lg text-bone/80">{loc(site, 'hero_text', lang)}</p>
+      <div class="mt-10 flex flex-wrap gap-4">
+        <a href={`/${lang}/litters/`} class="btn btn-primary">{t('cta_reserve')}</a>
+        <a href={`/${lang}/dogs/`} class="btn btn-ghost">{t('cta_dogs')}</a>
+      </div>
+    </div>
+  </section>
+
+  {
+    litter && (
+      <section class="container-x py-20">
+        <h2 class="section-title">{t('featured_litter')}</h2>
+        <a
+          href={`/${lang}/litters/#${litter.id}`}
+          class="card mt-8 flex flex-col items-start justify-between gap-6 p-8 transition hover:border-blood sm:flex-row sm:items-center"
+        >
+          <div>
+            <p class="font-display text-sm uppercase tracking-widest text-gold">{t(`litter_${litter.data.status}` as 'litter_born')}</p>
+            <h3 class="mt-2 text-3xl">{litter.data.title}</h3>
+            <p class="mt-2 text-bone/70">
+              {litter.data.birth_date
+                ? `${t('born_on')}: ${formatDate(litter.data.birth_date, lang)}`
+                : litter.data.expected_date
+                  ? `${t('expected_on')}: ${formatDate(litter.data.expected_date, lang)}`
+                  : ''}
+            </p>
+          </div>
+          <span class="btn btn-primary">{t('cta_reserve')}</span>
+        </a>
+      </section>
+    )
+  }
+
+  {
+    dogs.length > 0 && (
+      <section class="container-x py-12">
+        <div class="flex items-end justify-between">
+          <h2 class="section-title">{t('featured_dogs')}</h2>
+          <a href={`/${lang}/dogs/`} class="font-display text-sm uppercase tracking-widest text-blood">{t('view_all')} →</a>
+        </div>
+        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {dogs.map((dog) => (
+            <DogCard dog={dog} lang={lang} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    updates.length > 0 && (
+      <section class="container-x py-16">
+        <div class="flex items-end justify-between">
+          <h2 class="section-title">{t('latest_updates')}</h2>
+          <a href={`/${lang}/updates/`} class="font-display text-sm uppercase tracking-widest text-blood">{t('view_all')} →</a>
+        </div>
+        <div class="mt-8 grid gap-6 md:grid-cols-3">
+          {updates.map((u) => (
+            <a href={`/${lang}/updates/${u.id}/`} class="card group block overflow-hidden transition hover:border-blood">
+              <img src={u.data.image || PLACEHOLDER} alt="" loading="lazy" class="aspect-video w-full object-cover" />
+              <div class="p-5">
+                <p class="text-xs uppercase tracking-widest text-ash">
+                  {t(`cat_${u.data.category}` as 'cat_other')} · {formatDate(u.data.date, lang)}
+                </p>
+                <h3 class="mt-2 text-xl group-hover:text-blood">{loc(u.data, 'title', lang)}</h3>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="container-x py-16">
+    <div class="relative overflow-hidden bg-blood p-10 sm:p-14" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%)">
+      <h2 class="text-3xl sm:text-4xl">{t('welcome_cta_title')}</h2>
+      <p class="mt-3 max-w-xl text-white/90">{t('welcome_cta_text')}</p>
+      <a href={`/${lang}/contact/`} class="btn mt-8 bg-ink text-bone hover:bg-black">{t('cta_contact')}</a>
+    </div>
+  </section>
+</BaseLayout>

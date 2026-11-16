@@ -1,0 +1,164 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import ContactForm from '../../../components/ContactForm.astro';
+import { getLangPaths, useT, type Lang } from '../../../i18n/ui';
+import { journey } from '../../../i18n/journey';
+import { loc, md, formatDate, PLACEHOLDER } from '../../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+
+const all = (await getCollection('litters')).sort(
+  (a, b) =>
+    (b.data.birth_date ?? b.data.expected_date ?? new Date(0)).valueOf() -
+    (a.data.birth_date ?? a.data.expected_date ?? new Date(0)).valueOf(),
+);
+const current = all.filter((l) => l.data.status !== 'past');
+const past = all.filter((l) => l.data.status === 'past');
+
+const withParents = async (litter: (typeof all)[number]) => ({
+  litter,
+  sire: litter.data.sire ? await getEntry(litter.data.sire) : undefined,
+  dam: litter.data.dam ? await getEntry(litter.data.dam) : undefined,
+});
+const currentFull = await Promise.all(current.map(withParents));
+const pastFull = await Promise.all(past.map(withParents));
+const options = current.map((l) => l.data.title);
+const statusColor = {
+  available: 'bg-emerald-500 text-ink',
+  reserved: 'bg-gold text-ink',
+  sold: 'bg-white/20 text-bone',
+} as const;
+---
+
+<BaseLayout lang={lang} title={t('litters_title')} description={t('litters_intro')}>
+  <PageHero eyebrow="HöllenEngel" title={t('litters_title')} text={t('litters_intro')} />
+
+  <section class="container-x py-14">
+    <h2 class="section-title">{t('current_litters')}</h2>
+    {currentFull.length === 0 && <p class="mt-8 text-bone/70">{t('no_litters')}</p>}
+
+    <div class="mt-8 space-y-12">
+      {
+        currentFull.map(({ litter, sire, dam }) => (
+          <article id={litter.id} class="card p-6 sm:p-8">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p class="font-display text-sm uppercase tracking-widest text-gold">
+                  {t(`litter_${litter.data.status}` as 'litter_born')}
+                </p>
+                <h3 class="mt-1 text-3xl">{litter.data.title}</h3>
+                <p class="mt-2 text-sm text-bone/70">
+                  {litter.data.birth_date
+                    ? `${t('born_on')}: ${formatDate(litter.data.birth_date, lang)}`
+                    : litter.data.expected_date
+                      ? `${t('expected_on')}: ${formatDate(litter.data.expected_date, lang)}`
+                      : ''}
+                </p>
+              </div>
+              {(sire || dam) && (
+                <div class="flex gap-4 text-sm">
+                  {sire && (
+                    <a href={`/${lang}/dogs/${sire.id}/`} class="hover:text-blood">
+                      <span class="block text-ash">{t('sire')}</span>
+                      {sire.data.name}
+                    </a>
+                  )}
+                  {dam && (
+                    <a href={`/${lang}/dogs/${dam.id}/`} class="hover:text-blood">
+                      <span class="block text-ash">{t('dam')}</span>
+                      {dam.data.name}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div class="prose-kennel mt-4" set:html={md(loc(litter.data, 'description', lang))} />
+
+            {litter.data.puppies.length > 0 && (
+              <div class="mt-8">
+                <h4 class="mb-4 text-xl">{t('puppies')}</h4>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {litter.data.puppies.map((puppy) => (
+                    <div class="border border-white/10 bg-ink">
+                      <img src={puppy.photo || PLACEHOLDER} alt={puppy.name} loading="lazy" class="aspect-square w-full object-cover" />
+                      <div class="space-y-2 p-4">
+                        <div class="flex items-center justify-between gap-2">
+                          <h5 class="font-display text-lg uppercase">{puppy.name}</h5>
+                          <span class={`px-2 py-1 font-display text-[10px] uppercase tracking-widest ${statusColor[puppy.status]}`}>
+                            {t(`puppy_${puppy.status}` as 'puppy_sold')}
+                          </span>
+                        </div>
+                        <p class="text-xs text-bone/70">
+                          {puppy.sex === 'male' ? t('sex_male') : t('sex_female')}
+                          {puppy.color && ` · ${puppy.color}`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="border-y border-white/10 bg-coal py-16">
+    <div class="container-x">
+      <h2 class="section-title">{t('journey_title')}</h2>
+      <p class="mt-6 max-w-2xl text-bone/75">{t('journey_intro')}</p>
+      <ol class="mt-10 grid gap-6 md:grid-cols-5">
+        {
+          journey[lang].map((step, i) => (
+            <li class="relative border-t-2 border-blood pt-5">
+              <span class="font-display text-4xl text-white/10">{String(i + 1).padStart(2, '0')}</span>
+              <p class="mt-1 font-display text-xs uppercase tracking-widest text-gold">{step.weeks}</p>
+              <h3 class="mt-1 text-lg">{step.title}</h3>
+              <p class="mt-2 text-sm text-bone/70">{step.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="container-x py-16" id="reserve">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="section-title">{t('reserve_title')}</h2>
+      <p class="mt-6 text-bone/75">{t('reserve_intro')}</p>
+      <div class="mt-8">
+        <ContactForm lang={lang} mode="reserve" options={options} />
+      </div>
+    </div>
+  </section>
+
+  {
+    pastFull.length > 0 && (
+      <section class="container-x pb-16">
+        <h2 class="section-title">{t('past_litters')}</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {pastFull.map(({ litter, sire, dam }) => (
+            <div class="card p-5">
+              <h3 class="text-xl">{litter.data.title}</h3>
+              <p class="mt-1 text-sm text-bone/70">{formatDate(litter.data.birth_date, lang)}</p>
+              {(sire || dam) && (
+                <p class="mt-2 text-sm text-ash">
+                  {sire?.data.name} × {dam?.data.name}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

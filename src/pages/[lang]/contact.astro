@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import ContactForm from '../../components/ContactForm.astro';
+import { getLangPaths, useT, type Lang } from '../../i18n/ui';
+import { site } from '../../lib/content';
+
+export function getStaticPaths() {
+  return getLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useT(lang);
+---
+
+<BaseLayout lang={lang} title={t('contact_title')} description={t('contact_intro')}>
+  <PageHero eyebrow="HöllenEngel" title={t('contact_title')} text={t('contact_intro')} />
+  <section class="container-x grid gap-12 py-14 lg:grid-cols-3">
+    <div class="space-y-6 text-sm">
+      {
+        site.email && (
+          <div>
+            <p class="text-ash">{t('form_email')}</p>
+            <a class="text-lg hover:text-blood" href={`mailto:${site.email}`}>{site.email}</a>
+          </div>
+        )
+      }
+      {
+        site.phone && (
+          <div>
+            <p class="text-ash">{t('form_phone')}</p>
+            <a class="text-lg hover:text-blood" href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a>
+          </div>
+        )
+      }
+      {
+        site.address && (
+          <div>
+            <p class="text-ash">{t('address')}</p>
+            <p class="text-lg">{site.address}</p>
+          </div>
+        )
+      }
+    </div>
+    <div class="lg:col-span-2">
+      <ContactForm lang={lang} mode="contact" />
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,78 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/oswald';
+
+@theme {
+  --color-ink: #09090a;
+  --color-coal: #141416;
+  --color-steel: #232327;
+  --color-ash: #9a9aa2;
+  --color-bone: #f3f0ea;
+  --color-blood: #e83037;
+  --color-blood-dark: #b8212a;
+  --color-gold: #f0b323;
+  --color-azure: #2563eb;
+  --font-display: 'Oswald Variable', 'Arial Narrow', sans-serif;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink text-bone font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display uppercase tracking-wide;
+  }
+  ::selection {
+    @apply bg-blood text-white;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-display text-sm uppercase tracking-widest transition;
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+  .btn-primary {
+    @apply bg-blood text-white hover:bg-blood-dark;
+  }
+  .btn-ghost {
+    @apply border border-white/30 text-bone hover:bg-white/10;
+    clip-path: none;
+  }
+  .section-title {
+    @apply text-3xl sm:text-4xl;
+  }
+  .section-title::after {
+    content: '';
+    @apply mt-3 block h-1 w-16 bg-blood;
+  }
+  .prose-kennel {
+    @apply space-y-4 leading-relaxed text-bone/85;
+  }
+  .prose-kennel h2,
+  .prose-kennel h3 {
+    @apply mt-6 text-2xl text-bone;
+  }
+  .prose-kennel ul {
+    @apply list-disc space-y-1 pl-6;
+  }
+  .prose-kennel a {
+    @apply text-blood underline;
+  }
+  .field {
+    @apply w-full border border-white/15 bg-coal px-4 py-3 text-bone outline-none transition focus:border-blood;
+  }
+  .card {
+    @apply border border-white/10 bg-coal;
+  }
+}

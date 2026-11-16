@@ -1,0 +1,8 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: className = 'h-12 w-auto' } = Astro.props;
+---
+
+<img src="/images/logo.png" alt="HöllenEngel" width="1200" height="394" class={className} />

@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { useT, type Lang } from '../../../i18n/ui';
+import { loc, md, formatDate } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const updates = await getCollection('updates');
+  return ['ro', 'en'].flatMap((lang) =>
+    updates.map((entry) => ({ params: { lang, slug: entry.id }, props: { entry } })),
+  );
+}
+
+const lang = Astro.params.lang as Lang;
+const { entry } = Astro.props;
+const t = useT(lang);
+const title = loc(entry.data, 'title', lang);
+---
+
+<BaseLayout lang={lang} title={title} image={entry.data.image}>
+  <article class="container-x max-w-3xl py-14">
+    <a href={`/${lang}/updates/`} class="text-sm text-bone/60 hover:text-blood">← {t('back')}</a>
+    <p class="mt-6 text-xs uppercase tracking-widest text-blood">
+      {t(`cat_${entry.data.category}` as 'cat_other')} · {formatDate(entry.data.date, lang)}
+    </p>
+    <h1 class="mt-2 text-4xl sm:text-5xl">{title}</h1>
+    {entry.data.image && <img src={entry.data.image} alt="" class="mt-8 w-full object-cover" />}
+    <div class="prose-kennel mt-8" set:html={md(loc(entry.data, 'body', lang))} />
+  </article>
+</BaseLayout>
