@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: YOUR_GITHUB_USER/hollenengel # replace after creating the GitHub repository
+  repo: hollenengelmali/hollenengel
   branch: main
 
 local_backend: true # used only with `npm run cms` on localhost
