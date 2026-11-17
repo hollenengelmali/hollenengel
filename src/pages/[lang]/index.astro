@@ -18,6 +18,7 @@ const updates = (await getCollection('updates'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 const litter = litters[0];
+const mottoParts = (site.motto ?? '').split(/(?<=\.)\s+/).filter(Boolean);
 ---
 
 <BaseLayout lang={lang}>
@@ -46,6 +47,18 @@ const litter = litters[0];
       </div>
     </div>
   </section>
+
+  {
+    mottoParts.length > 0 && (
+      <section class="border-y border-white/10 bg-coal py-12 text-center">
+        <p class="container-x font-display text-3xl uppercase tracking-[0.2em] sm:text-5xl">
+          {mottoParts.map((part, i) => (
+            <span class:list={['block sm:inline', i > 0 && 'text-blood sm:ml-4']}>{part}</span>
+          ))}
+        </p>
+      </section>
+    )
+  }
 
   {
     litter && (

@@ -21,6 +21,7 @@ const socials = [
     <div class="space-y-4">
       <Logo class="h-16 w-auto" />
       <p class="text-sm text-bone/70">{loc(site, 'tagline', lang)}</p>
+      {site.motto && <p class="font-display text-sm uppercase tracking-widest text-blood">{site.motto}</p>}
       <p class="text-xs text-ash">{loc(site, 'registration', lang)}</p>
     </div>
 

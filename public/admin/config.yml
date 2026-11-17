@@ -153,6 +153,7 @@ collections:
           - { label: Kennel name, name: kennel_name, widget: string }
           - { label: Tagline (RO), name: tagline_ro, widget: string }
           - { label: Tagline (EN), name: tagline_en, widget: string }
+          - { label: Motto, name: motto, widget: string, required: false }
           - { label: Home title (RO), name: hero_title_ro, widget: string }
           - { label: Home title (EN), name: hero_title_en, widget: string }
           - { label: Home text (RO), name: hero_text_ro, widget: text }
